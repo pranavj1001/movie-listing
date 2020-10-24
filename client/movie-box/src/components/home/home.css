@@ -1,0 +1,13 @@
+.home--heading {
+    font-weight: 300;
+}
+
+.home--tile-row {
+    margin-top: 20px;
+}
+
+@media (max-width: 768px) {
+    .home--tile {
+        margin-bottom: 10px;
+    }
+}
