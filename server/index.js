@@ -1,5 +1,7 @@
 const keys = require('./keys');
 const constants = require('./string-constants');
+const populateData = require('./imdb.json');
+const fs = require('fs');
 
 // Express App Setup starts ---------------
 const express = require('express');
@@ -21,7 +23,8 @@ const pgClient = new Pool({
     port: keys.pgPort
 });
 pgClient.on('error', () => console.log(constants.LOST_PG_CONNECTION_MESSAGE));
-pgClient.connect((err, client, release) => {
+
+pgClient.connect(async (err, client, release) => {
     if (err) {
         return console.error('Error acquiring client', err.stack)
     }
@@ -35,12 +38,43 @@ pgClient.connect((err, client, release) => {
             return console.error('Error Creating Extension', err.stack);
         }
     });
+    const isDataPopulated = fs.readFileSync('./IsDataPopulated.txt', encoding = 'utf8');
     client.query(constants.PG_DB_INIT_FUNCTION, (err, result) => {
-        release();
+        if (isDataPopulated === 'true') {
+            release();
+        }
         if (err) {
             return console.error('Error Creating Function', err.stack);
         }
     });
+    
+    console.log(populateData.length, isDataPopulated);
+    if (isDataPopulated === 'false') {
+        console.log("Populating DataBase.");
+        let i = 0;
+        const pushedMovies = [];
+        while (i < populateData.length) {
+            const result = await client.query('select save_movie($1::uuid, $2, $3, $4::int, $5::numeric, $6, $7, $8, $9::text[])', 
+            [
+                null, 
+                populateData[i].name.trim(), 
+                populateData[i].director.trim(), 
+                populateData[i]["99popularity"], 
+                populateData[i].imdb_score, 
+                'admin@admin.com', 
+                'admin@admin.com', 
+                '000000', 
+                populateData[i].genre.map((value) => value.trim())
+            ]);
+            if (result.rows[0].save_movie.status === 0) {
+                pushedMovies.push(result.rows[0].save_movie.data.movieId);
+            }
+            i++;
+        }
+        console.log(`Populated DataBase with ${pushedMovies.length} entries.`);
+        fs.writeFileSync('./IsDataPopulated.txt', 'true');
+        release();
+    }
 });
 // Postgres Client Setup ends ---------------
 
