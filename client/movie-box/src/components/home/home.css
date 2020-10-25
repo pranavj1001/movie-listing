@@ -6,8 +6,34 @@
     margin-top: 20px;
 }
 
-.home--tile {
+.home--tile, .home--search-buttton {
     margin-bottom: 15px;
+}
+
+.home--paragraph {
+    margin-left: 15px;
+}
+
+.home--dropdown-inline-block {
+    display: inline-block;
+}
+
+.home--dropdown-width-auto {
+    width: auto;
+}
+
+.home--dropdown {
+    margin-right: 15px;
+}
+
+.home--search-buttton {
+    vertical-align: baseline;
+}
+
+.home--dropdown-menu {
+    max-height: 400px;
+    overflow-y: auto;
+    width: 100%;
 }
 
 @media (max-width: 768px) {

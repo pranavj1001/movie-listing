@@ -223,6 +223,14 @@ BEGIN
 		DROP TABLE IF EXISTS temp_genre_ids;
 		CREATE TEMPORARY TABLE temp_genre_ids(id uuid);
 		
+		DROP TABLE IF EXISTS temp_results;
+		CREATE TEMPORARY TABLE temp_results(
+			id uuid,
+			name text,
+			director text,
+			popularity int
+		);
+		
 		IF par_ignoregenres = false THEN
 			INSERT INTO
 				temp_genre_ids(id)
@@ -238,11 +246,12 @@ BEGIN
 		var_query := '
 			(SELECT json_agg(t1) FROM (
 				SELECT
-					DISTINCT(m.id),
+					m.id,
 					m.name,
 					m.director,
 					m.popularity,
-					m.score
+					m.score,
+					count(*) OVER() AS count
 				FROM
 					movies m
 				INNER JOIN
@@ -260,6 +269,8 @@ BEGIN
 					OR
 					lower(m.director) like ''%' || par_searchtext || '%'')
 					AND m.isactive = true
+				GROUP BY
+					m.id
 				ORDER BY
 					m.' || par_sortby || ' '  || par_sortorder || '
 				LIMIT
@@ -373,7 +384,7 @@ var_error text;
 BEGIN
 	var_error := '';
 	BEGIN
-		var_data := (SELECT json_agg(t1) FROM (SELECT * FROM genres) t1)::json;
+		var_data := (SELECT json_agg(t1) FROM (SELECT * FROM genres ORDER BY name) t1)::json;
 		var_statuscode := 0;
 		EXCEPTION WHEN others THEN
 			RAISE NOTICE '% %', SQLERRM, SQLSTATE;
