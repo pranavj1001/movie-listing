@@ -48,7 +48,6 @@ pgClient.connect(async (err, client, release) => {
         }
     });
     
-    console.log(populateData.length, isDataPopulated);
     if (isDataPopulated === 'false') {
         console.log("Populating DataBase.");
         let i = 0;
@@ -115,9 +114,9 @@ app.post('/savemovie', async (req, res) => {
 });
 
 app.post('/searchmovies', async (req, res) => {
-    const { searchTerm, sortBy, sortOrder, genreList, pageSize, pageNumber } = req.body;
-    const values = await pgClient.query('select search_movies($1, $2, $3, $4::uuid[], $5::integer, $6::integer)', 
-    [searchTerm, sortBy, sortOrder, genreList, pageSize, pageNumber]);
+    const { searchTerm, sortBy, sortOrder, genreList, pageSize, pageNumber, ignoreGenres } = req.body;
+    const values = await pgClient.query('select search_movies($1, $2, $3, $4::uuid[], $5::integer, $6::integer, $7::bool)', 
+    [searchTerm, sortBy, sortOrder, genreList, pageSize, pageNumber, ignoreGenres]);
     res.send(values.rows[0].search_movies);
 });
 

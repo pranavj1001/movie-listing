@@ -204,7 +204,8 @@ CREATE OR REPLACE FUNCTION public.search_movies(
 	par_sortorder text DEFAULT NULL::text,
 	par_genrelist uuid[] DEFAULT NULL::uuid[],
 	par_pagesize integer DEFAULT 25,
-	par_pagenumber integer DEFAULT 1
+	par_pagenumber integer DEFAULT 1,
+	par_ignoregenres bool DEFAULT false
 )
     RETURNS json
     LANGUAGE 'plpgsql'
@@ -222,9 +223,15 @@ BEGIN
 		DROP TABLE IF EXISTS temp_genre_ids;
 		CREATE TEMPORARY TABLE temp_genre_ids(id uuid);
 		
-		INSERT INTO
-			temp_genre_ids(id)
-		SELECT unnest(par_genrelist);
+		IF par_ignoregenres = false THEN
+			INSERT INTO
+				temp_genre_ids(id)
+			SELECT unnest(par_genrelist);
+		ELSE
+			INSERT INTO
+				temp_genre_ids(id)
+			SELECT id from genres;
+		END IF;
 		
 		par_searchtext := lower(par_searchtext);
 

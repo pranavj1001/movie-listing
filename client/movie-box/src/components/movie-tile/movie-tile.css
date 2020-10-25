@@ -1,0 +1,43 @@
+.movie-tile--main-div {
+    border-radius: 10px;
+    padding: 15px;
+    height: 100%;
+    color: #ffffff;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.07), 
+                0 2px 4px rgba(0,0,0,0.07), 
+                0 4px 8px rgba(0,0,0,0.07), 
+                0 8px 16px rgba(0,0,0,0.07),
+                0 16px 32px rgba(0,0,0,0.07), 
+                0 32px 64px rgba(0,0,0,0.07);
+    transition: box-shadow 500ms;
+}
+
+.movie-tile--main-div:hover {
+    box-shadow: none;
+    transition: box-shadow 700ms;
+}
+
+.movie-tile--link:hover {
+    text-decoration: none;
+}
+
+.movie-tile--paragraph {
+    margin-bottom: 5px;
+}
+
+.movie-tile--paragraph-heading {
+    font-size: 1.5rem;
+}
+
+.movie-tile--paragraph-heading-invert-colors {
+    mix-blend-mode: difference;
+}
+
+.movie-tile--paragraph-content {
+    font-size: 1.1rem;
+}
+
+.movie-tile--paragraph-click-message {
+    font-size: 0.9rem;
+}
