@@ -203,12 +203,12 @@ CREATE OR REPLACE FUNCTION public.search_movies(
 	par_sortby text DEFAULT NULL::text,
 	par_sortorder text DEFAULT NULL::text,
 	par_genrelist uuid[] DEFAULT NULL::uuid[],
-	par_pagesize INTEGER DEFAULT 25,
-	par_pagenumber INTEGER DEFAULT 1
+	par_pagesize integer DEFAULT 25,
+	par_pagenumber integer DEFAULT 1
 )
     RETURNS json
     LANGUAGE 'plpgsql'
-
+    
 AS $BODY$
 DECLARE
 var_data json;
@@ -218,85 +218,50 @@ var_query text;
 BEGIN
 	var_error := '';
 	BEGIN
-	
-		DROP TABLE IF EXISTS temp_search_results;
-		CREATE TEMPORARY TABLE temp_search_results
-		(
-			id UUID, 
-			name TEXT,
-			director TEXT,
-			popularity INTEGER,
-			score NUMERIC,
-			createddate TIMESTAMP WITH TIME ZONE,
-			lastmodifieddate TIMESTAMP WITH TIME ZONE, 
-			createdby TEXT,
-			lastmodifiedby TEXT,
-			createdbygoogleuserid TEXT
-		);
+		
+		DROP TABLE IF EXISTS temp_genre_ids;
+		CREATE TEMPORARY TABLE temp_genre_ids(id uuid);
+		
+		INSERT INTO
+			temp_genre_ids(id)
+		SELECT unnest(par_genrelist);
 		
 		par_searchtext := lower(par_searchtext);
 
 		var_query := '
-		INSERT INTO 
-			temp_search_results(
-				id,
-				name,
-				director,
-				popularity,
-				score,
-				createddate,
-				lastmodifieddate,
-				createdby,
-				lastmodifiedby,
-				createdbygoogleuserid
-			)
-			SELECT
-				m.id,
-				m.name,
-				m.director,
-				m.popularity,
-				m.score,
-				m.createddate,
-				m.lastmodifieddate,
-				m.createdby,
-				m.lastmodifiedby,
-				m.createdbygoogleuserid	
-			FROM
-				movies m
-			WHERE
-				(lower(m.name) like ''%' || par_searchtext || '%''
-				OR
-				lower(m.director) like ''%' || par_searchtext || '%'')
-				AND m.isactive = true
-			ORDER BY
-				m.' || par_sortby || ' '  || par_sortorder || '
-			LIMIT
-				' || par_pagesize || ' 
-			OFFSET
-				' || par_pagesize * (par_pagenumber - 1);
-
-		EXECUTE var_query;
-		
-		var_data := (
-			SELECT json_agg(t1) FROM (
+			(SELECT json_agg(t1) FROM (
 				SELECT
-					DISTINCT(tsr.id),
-					tsr.name,
-					tsr.director,
-					tsr.popularity
+					DISTINCT(m.id),
+					m.name,
+					m.director,
+					m.popularity,
+					m.score
 				FROM
-					temp_search_results tsr
+					movies m
 				INNER JOIN
 					movies_genres_mapping mgp
 				ON
-					mgp.movieid = tsr.id
+					mgp.movieid = m.id
 				INNER JOIN
 					genres g
 				ON
 					g.id = mgp.genreid
 					AND
-					g.id = ANY(par_genrelist)
-			) t1)::json;
+					g.id IN (SELECT id FROM temp_genre_ids)
+				WHERE
+					(lower(m.name) like ''%' || par_searchtext || '%''
+					OR
+					lower(m.director) like ''%' || par_searchtext || '%'')
+					AND m.isactive = true
+				ORDER BY
+					m.' || par_sortby || ' '  || par_sortorder || '
+				LIMIT
+					' || par_pagesize || ' 
+				OFFSET
+					' || par_pagesize * (par_pagenumber - 1) || '
+			) t1)';
+
+		EXECUTE var_query INTO var_data;
 		
 		var_statuscode := 0;
 
@@ -334,9 +299,37 @@ BEGIN
 			var_data := 
 				(SELECT json_agg(t1) FROM (
 					SELECT
-						*
+						m.id, 
+						m.name, 
+						m.director, 
+						m.popularity, 
+						m.score, 
+						m.createddate, 
+						m.lastmodifieddate, 
+						m.createdby, 
+						m.lastmodifiedby, 
+						m.createdbygoogleuserid, 
+						m.isactive,
+						(
+							SELECT
+								json_agg(t2)
+							FROM
+							(
+								SELECT
+									g.id,
+									g.name
+								FROM
+									movies_genres_mapping mgp
+								INNER JOIN
+									genres g
+								ON
+									mgp.genreid = g.id
+								WHERE
+									mgp.movieid = par_movieid
+							) t2
+						) AS genres
 					FROM
-						movies
+						movies m
 					WHERE
 						id = par_movieid
 				) t1)::json;
@@ -351,6 +344,35 @@ BEGIN
 			var_statuscode := 1;
 			var_error := 'Some error occurred while fetching details for the Movie. ' || SQLERRM;
 			var_data := json_build_object('msg', 'Some error occurred while fetching details for the Movie.', 'movieid', NULL);
+	END;
+	
+	RETURN json_build_object(
+		'status', var_statuscode,
+		'data', var_data,
+		'error', var_error
+	);
+END;
+$BODY$;
+
+CREATE OR REPLACE FUNCTION public.get_genres()
+    RETURNS json
+    LANGUAGE 'plpgsql'
+
+AS $BODY$
+DECLARE
+var_data json;
+var_statuscode int;
+var_error text;
+BEGIN
+	var_error := '';
+	BEGIN
+		var_data := (SELECT json_agg(t1) FROM (SELECT * FROM genres) t1)::json;
+		var_statuscode := 0;
+		EXCEPTION WHEN others THEN
+			RAISE NOTICE '% %', SQLERRM, SQLSTATE;
+			var_statuscode := 1;
+			var_error := 'Some error occurred while fetching the Genres. ' || SQLERRM;
+			var_data := json_build_object('msg', 'Some error occurred while fetching the Genres.');
 	END;
 	
 	RETURN json_build_object(

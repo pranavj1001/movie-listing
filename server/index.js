@@ -49,6 +49,44 @@ app.get('/', (req, res) => {
     res.send('Server is up and running!');
 });
 
+app.get('/getgenres', async (req, res) => {
+    const values = await pgClient.query('select get_genres()', []);
+    res.send(values.rows[0].get_genres);
+});
+
+app.post('/getmovie', async (req, res) => {
+    if (req.body.id !== null && req.body.id.trim() === '') {
+        req.body.id = null;
+    }
+    const values = await pgClient.query('select get_movie($1)', [req.body.id]);
+    res.send(values.rows[0].get_movie);
+});
+
+app.post('/deletemovie', async (req, res) => {
+    if (req.body.id !== null && req.body.id.trim() === '') {
+        req.body.id = null;
+    }
+    const values = await pgClient.query('select delete_movie($1)', [req.body.id]);
+    res.send(values.rows[0].delete_movie);
+});
+
+app.post('/savemovie', async (req, res) => {
+    if (req.body.movieId !== null && req.body.movieId.trim() === '') {
+        req.body.movieId = null;
+    }
+    const { movieId, movieName, director, popularity, score, createdBy, lastModifiedBy, createdByGoogleUserId, genreList } = req.body;
+    const values = await pgClient.query('select save_movie($1::uuid, $2, $3, $4::int, $5::numeric, $6, $7, $8, $9::text[])', 
+    [movieId, movieName, director, popularity, score, createdBy, lastModifiedBy, createdByGoogleUserId, genreList]);
+    res.send(values.rows[0].save_movie);
+});
+
+app.post('/searchmovies', async (req, res) => {
+    const { searchTerm, sortBy, sortOrder, genreList, pageSize, pageNumber } = req.body;
+    const values = await pgClient.query('select search_movies($1, $2, $3, $4::uuid[], $5::integer, $6::integer)', 
+    [searchTerm, sortBy, sortOrder, genreList, pageSize, pageNumber]);
+    res.send(values.rows[0].search_movies);
+});
+
 app.listen(5000, error => {
     console.log(constants.LISTENING_ON_PORT_MESSAGE);
 });
