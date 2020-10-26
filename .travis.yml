@@ -1,3 +1,4 @@
+language: generic
 sudo: required
 services: 
   - docker
@@ -22,3 +23,14 @@ after_success:
   - docker push pranavj1001/movie-listing-server
   - docker push pranavj1001/movie-listing-nginx
 
+deploy:
+  provider: elasticbeanstalk
+  region: ap-south-1
+  app: movie-listing
+  env: MovieListing-env
+  bucket_name: elasticbeanstalk-ap-south-1-311143012582
+  bucket_path: movie-listing
+  on:
+    branch: main
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY
