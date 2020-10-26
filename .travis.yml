@@ -21,3 +21,4 @@ after_success:
   - docker push pranavj1001/movie-listing-client
   - docker push pranavj1001/movie-listing-server
   - docker push pranavj1001/movie-listing-nginx
+
