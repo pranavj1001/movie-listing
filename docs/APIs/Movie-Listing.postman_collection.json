@@ -1,0 +1,141 @@
+{
+	"info": {
+		"_postman_id": "3aad263b-eab8-477c-94b3-5ecf76b186f2",
+		"name": "Movie-Listing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "GetGenres",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:3050/api/getgenres",
+					"host": [
+						"localhost"
+					],
+					"port": "3050",
+					"path": [
+						"api",
+						"getgenres"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetMovie",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": \"2558b900-91f5-4615-abc4-8253b5f5a148\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3050/api/getmovie",
+					"host": [
+						"localhost"
+					],
+					"port": "3050",
+					"path": [
+						"api",
+						"getmovie"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DeleteMovie",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": \"5255ea01-bf9c-41e5-be03-17b76bb3e206\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3050/api/deletemovie",
+					"host": [
+						"localhost"
+					],
+					"port": "3050",
+					"path": [
+						"api",
+						"deletemovie"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SaveMovie",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"movieId\": \"\",\r\n    \"movieName\": \"test 1\",\r\n    \"director\": \"foo bar\",\r\n    \"popularity\": 93,\r\n    \"score\": 9.3,\r\n    \"createdBy\": \"admin1\",\r\n    \"lastModifiedBy\": \"admin1\",\r\n    \"createdByGoogleUserId\": \"123123\",\r\n    \"genreList\": [\"Action\", \"Comedy\"]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3050/api/savemovie",
+					"host": [
+						"localhost"
+					],
+					"port": "3050",
+					"path": [
+						"api",
+						"savemovie"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SearchMovies",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"searchTerm\": \"\",\r\n    \"sortBy\": \"popularity\",\r\n    \"sortOrder\": \"desc\",\r\n    \"genreList\": [\"37a13246-3528-4fb8-8af0-8be0aa57c863\", \"63c12ffd-75b8-41f3-9884-ef2cc8cf905d\"],\r\n    \"pageSize\": 25,\r\n    \"pageNumber\": 1,\r\n    \"ignoreGenres\": true\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3050/api/searchmovies",
+					"host": [
+						"localhost"
+					],
+					"port": "3050",
+					"path": [
+						"api",
+						"searchmovies"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
