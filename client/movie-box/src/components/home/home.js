@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
 
 import './home.css';
 
@@ -22,7 +23,6 @@ class Home extends Component {
         },
         movieList: [],
         genres: [],
-        isSignedIn: null,
         sortByDropdownToggle: false,
         sortByDropdownOptions: ['Name', 'Popularity', 'Director'],
         sortByDropdownString: 'Name',
@@ -163,7 +163,7 @@ class Home extends Component {
      * @returns {Boolean}
      */
     isUserSignedIn = () => {
-        if (this.state.isSignedIn) {
+        if (this.props.isSignedIn) {
             return true;
         }
         return false;
@@ -467,7 +467,7 @@ class Home extends Component {
                                 </div>
                             </div>
                             <button className="btn btn-primary home--buttton" onClick={this.searchMovies}>Search</button>
-                            <Link className="btn btn-primary home--buttton home--page-number-margin" to="/movie/00000000-0000-0000-0000-000000000000" disabled={!this.isUserSignedIn()}>Add new Movie</Link>
+                            <Link className="btn btn-primary home--buttton home--page-number-margin" to="/movie/00000000-0000-0000-0000-000000000000" hidden={!this.isUserSignedIn()}>Add new Movie</Link>
                         </div>
                     </div>
 
@@ -506,4 +506,8 @@ class Home extends Component {
     }
 }
 
-export default Home;
+const mapStateToProps = (state) => {
+    return { isSignedIn: state.auth.isSignedIn };
+};
+
+export default connect(mapStateToProps)(Home);

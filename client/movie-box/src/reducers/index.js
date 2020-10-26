@@ -1,3 +1,6 @@
 import { combineReducers } from 'redux';
+import GoogleAuthReducer from './google-auth-reducer';
 
-export default combineReducers({});
+export default combineReducers({
+    auth: GoogleAuthReducer
+});

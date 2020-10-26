@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from "react-router-dom";
+import { connect } from 'react-redux';
 
 import './movie-details.css';
 import '../../service/movie-box-api';
@@ -22,7 +23,6 @@ class MovieDetails extends Component {
             createdByGoogleUserId: '',
             genreList: []
         },
-        isSignedIn: null,
         isNewMode: false,
         genreDropdownToggle: false,
         genres: [],
@@ -231,7 +231,7 @@ class MovieDetails extends Component {
      * @returns {Boolean}
      */
     isUserSignedInAndIsNewMode = () => {
-        if (this.state.isNewMode && this.state.isSignedIn) {
+        if (this.state.isNewMode && this.props.isSignedIn) {
             return true;
         }
         return false;
@@ -242,7 +242,7 @@ class MovieDetails extends Component {
      * @returns {Boolean}
      */
     isUserSignedIn = () => {
-        if (this.state.isSignedIn) {
+        if (this.props.isSignedIn) {
             return true;
         }
         return false;
@@ -253,7 +253,7 @@ class MovieDetails extends Component {
      * @returns {Boolean}
      */
     isUserSignedInAndIsNotNewMode = () => {
-        if (!this.state.isNewMode && this.state.isSignedIn) {
+        if (!this.state.isNewMode && this.props.isSignedIn) {
             return true;
         }
         return false;
@@ -527,4 +527,8 @@ class MovieDetails extends Component {
     }
 }
 
-export default MovieDetails;
+const mapStateToProps = (state) => {
+    return { isSignedIn: state.auth.isSignedIn };
+};
+
+export default connect(mapStateToProps)(MovieDetails);

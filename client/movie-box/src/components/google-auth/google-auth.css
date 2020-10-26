@@ -1,0 +1,11 @@
+.google-auth--div {
+    position: absolute;
+    bottom: 10px;
+    right: 15px;
+}
+
+@media (min-width: 786px) {
+    .google-auth--div {
+        bottom: 15px;
+    }
+}
