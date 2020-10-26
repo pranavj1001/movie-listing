@@ -1,10 +1,6 @@
 sudo: required
 services: 
   - docker
-
-branches:
-  only:
-    - main
   
 # build test images
 before_install:
