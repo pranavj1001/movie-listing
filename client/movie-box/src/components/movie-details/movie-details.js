@@ -35,6 +35,7 @@ class MovieDetails extends Component {
         if (movieId) {
             if (movieId === '00000000-0000-0000-0000-000000000000') {
                 this.setState({ isNewMode: true });
+                this.getAllGenres();
             } else {
                 this.getMovieDetails(movieId);
             }
@@ -79,10 +80,11 @@ class MovieDetails extends Component {
     /**
      * Saves Movie Data
      */
-    saveMovie = () => {
+    saveMovie = async () => {
         if (window.confirm('Are you sure you want to save?')) {
             const validationString = this.validateSaveObject();
             if(validationString === '') {
+                await this.onUserEmailChange(this.props.email);
                 saveMovie(this.state.movieObject)
                     .then((response) => {
                         if (response.data.status === 0){ 
@@ -322,6 +324,21 @@ class MovieDetails extends Component {
     }
 
     /**
+     * Updates state when email is updated
+     * @param {String} newValue 
+     */
+    onUserEmailChange = async (newValue) => {
+        await this.setState(prevState => { 
+            let movieObject = { ...prevState.movieObject };
+            if (this.state.movieObject.movieId === '') {
+                movieObject.createdBy = newValue;
+            }
+            movieObject.lastModifiedBy = newValue;
+            return { movieObject };
+        });
+    }
+
+    /**
      * Updates state when genre is updated
      * @param {Event} event 
      * @param { {id: String, name: String, checked: bool} } genre 
@@ -515,6 +532,21 @@ class MovieDetails extends Component {
                         </div>
                     </div>
 
+                    <div className="row" hidden={!this.isUserSignedInAndIsNotNewMode()}>
+                        <div className="alert alert-info home--alert home--paragraph" role="alert">
+                            Created By: {this.state.movieObject.createdBy}
+                        </div>
+                        <div className="alert alert-info home--alert home--paragraph" role="alert">
+                            Last Modified By: {this.state.movieObject.lastModifiedBy}
+                        </div>
+                        <div className="alert alert-info home--alert home--paragraph" hidden={this.state.movieObject.createdDate === ''} role="alert">
+                            Created On: {this.state.movieObject.createdDate}
+                        </div>
+                        <div className="alert alert-info home--alert home--paragraph" hidden={this.state.movieObject.lastModifiedDate === ''} role="alert">
+                            Last Modified On: {this.state.movieObject.lastModifiedDate}
+                        </div>
+                    </div>
+
                     <div className="row" hidden={!this.isUserSignedIn()}>
                         <button className="btn btn-primary movie-details--button" onClick={this.saveMovie}>Save</button>
                         <button className="btn btn-danger movie-details--button" onClick={this.deleteMovie} hidden={!this.isUserSignedInAndIsNotNewMode()}>Delete</button>
@@ -528,7 +560,7 @@ class MovieDetails extends Component {
 }
 
 const mapStateToProps = (state) => {
-    return { isSignedIn: state.auth.isSignedIn };
+    return { isSignedIn: state.auth.isSignedIn, email: state.auth.email };
 };
 
 export default connect(mapStateToProps)(MovieDetails);

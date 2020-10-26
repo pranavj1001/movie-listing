@@ -1,8 +1,9 @@
 import { SIGN_IN_ACTION, SIGN_OUT_ACTION } from './action_constants';
 
-export const signIn = () => {
+export const signIn = (email) => {
     return {
-        type: SIGN_IN_ACTION
+        type: SIGN_IN_ACTION,
+        payload: { email }
     };
 };
 
