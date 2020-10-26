@@ -1,4 +1,5 @@
 # movie-listing
+[![Build Status](https://travis-ci.org/pranavj1001/movie-listing.svg?branch=main)](https://travis-ci.org/pranavj1001/movie-listing)
 
 An Application to view / add / edit movies.
 
