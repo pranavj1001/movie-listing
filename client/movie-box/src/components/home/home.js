@@ -137,8 +137,9 @@ class Home extends Component {
     // IsVisible Functions------------------------------------
     /**
      * Determines to show previous page button or not based on some conditions
+     * @returns {Boolean}
      */
-    isPreviousPageButtonVisible = () => {
+    isPreviousPageButtonClickable = () => {
         if (this.state.searchParams.pageNumber === 1) {
             return false;
         }
@@ -147,8 +148,9 @@ class Home extends Component {
 
     /**
      * Determines to show next page button or not based on some conditions
+     * @returns {Boolean}
      */
-    isNextPageButtonVisible = () => {
+    isNextPageButtonClickable = () => {
         if (this.state.searchParams.pageNumber === this.state.totalPageCount) {
             return false;
         }
@@ -476,9 +478,9 @@ class Home extends Component {
 
                     <div className="row">
                         <div className="col-md-8">
-                            <button className="btn btn-primary home--buttton home--page-number-margin" onClick={this.goToPreviousPage} disabled={!this.isPreviousPageButtonVisible()}>Previous Page</button>
+                            <button className="btn btn-primary home--buttton home--page-number-margin" onClick={this.goToPreviousPage} disabled={!this.isPreviousPageButtonClickable()}>Previous Page</button>
                             <p className="home--page-number-margin home--page-number-paragraph">{this.state.searchParams.pageNumber} / {this.state.totalPageCount}</p>
-                            <button className="btn btn-primary home--buttton home--page-number-margin" onClick={this.goToNextPage} disabled={!this.isNextPageButtonVisible()}>Next Page</button>
+                            <button className="btn btn-primary home--buttton home--page-number-margin" onClick={this.goToNextPage} disabled={!this.isNextPageButtonClickable()}>Next Page</button>
                         </div>
                     </div>
                 </div>

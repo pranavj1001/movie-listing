@@ -1,0 +1,17 @@
+.movie-details--link {
+    color: #555555;
+    font-size: 1.3rem;
+}
+
+.movie-details--button {
+    margin-left: 15px;
+}
+
+.movie-details--link:hover {
+    color: #333333;
+    text-decoration: none;
+}
+
+.movie-details--form {
+    margin-top: 15px;
+}
