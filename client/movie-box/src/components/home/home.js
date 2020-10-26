@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 
 import './home.css';
 
@@ -155,6 +156,17 @@ class Home extends Component {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Determines if Add new button should be clickable or not
+     * @returns {Boolean}
+     */
+    isUserSignedIn = () => {
+        if (this.state.isSignedIn) {
+            return true;
+        }
+        return false;
     }
 
     // OnChange Functions-------------------------------------
@@ -455,6 +467,7 @@ class Home extends Component {
                                 </div>
                             </div>
                             <button className="btn btn-primary home--buttton" onClick={this.searchMovies}>Search</button>
+                            <Link className="btn btn-primary home--buttton home--page-number-margin" to="/movie/00000000-0000-0000-0000-000000000000" disabled={!this.isUserSignedIn()}>Add new Movie</Link>
                         </div>
                     </div>
 
@@ -475,18 +488,18 @@ class Home extends Component {
                             </div>
                         </div>
                     </div>
-
-                    <div className="row">
-                        <div className="col-md-8">
-                            <button className="btn btn-primary home--buttton home--page-number-margin" onClick={this.goToPreviousPage} disabled={!this.isPreviousPageButtonClickable()}>Previous Page</button>
-                            <p className="home--page-number-margin home--page-number-paragraph">{this.state.searchParams.pageNumber} / {this.state.totalPageCount}</p>
-                            <button className="btn btn-primary home--buttton home--page-number-margin" onClick={this.goToNextPage} disabled={!this.isNextPageButtonClickable()}>Next Page</button>
-                        </div>
-                    </div>
                 </div>
 
                 <div className="row home--tile-row">
                     {this.renderMovieTiles()}
+                </div>
+
+                <div className="row">
+                    <div className="col-md-8">
+                        <button className="btn btn-primary home--buttton home--page-number-margin" onClick={this.goToPreviousPage} disabled={!this.isPreviousPageButtonClickable()}>Previous Page</button>
+                        <p className="home--page-number-margin home--page-number-paragraph">{this.state.searchParams.pageNumber} / {this.state.totalPageCount}</p>
+                        <button className="btn btn-primary home--buttton home--page-number-margin" onClick={this.goToNextPage} disabled={!this.isNextPageButtonClickable()}>Next Page</button>
+                    </div>
                 </div>
             </div>
         );

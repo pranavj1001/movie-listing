@@ -22,7 +22,7 @@ class MovieDetails extends Component {
             createdByGoogleUserId: '',
             genreList: []
         },
-        isSignedIn: true,
+        isSignedIn: null,
         isNewMode: false,
         genreDropdownToggle: false,
         genres: [],
@@ -197,8 +197,14 @@ class MovieDetails extends Component {
      */
     pushNewGenre = () => {
         const value = this.state.newGenre;
+
+        if (value.trim() === '') {
+            alert('New Genre cannot be empty');
+            return;
+        }
+
         for (const genre of this.state.genres) {
-            if (genre.name.toLowerCase() === value.toLowerCase()) {
+            if (genre.name.toLowerCase().trim() === value.toLowerCase().trim()) {
                 alert('Genre already exists');
                 return;
             } 
@@ -480,7 +486,7 @@ class MovieDetails extends Component {
                                 </div>
                                 <div className="dropdown">
                                     <button className="btn btn-secondary dropdown-toggle" type="button" id="genresDropdown" onClick={this.toggleGenreDropdown}>
-                                        Click to view your Selected Genres
+                                        {this.isUserSignedIn() ? 'Click to view your Selected Genres' : 'Click to view this Movie\'s Genres'}
                                     </button>
                                     <div className="dropdown-menu home--dropdown-menu" aria-labelledby="genresDropdown" style={{display: (this.state.genreDropdownToggle ? 'block' : 'none')}}>
                                         {this.renderGenresDropdown()}
