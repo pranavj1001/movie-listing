@@ -13,6 +13,6 @@ const store = createStore(reducers, applyMiddleware(thunk));
 
 test('App is being rendered', () => {
   const { getByText } = render(<Provider store={store}><App /></Provider>);
-  const linkElement = getByText(/React Todo/i);
+  const linkElement = getByText(/Movie Box/i);
   expect(linkElement).toBeInTheDocument();
 });
