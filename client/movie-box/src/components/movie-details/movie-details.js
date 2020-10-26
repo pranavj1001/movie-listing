@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 import './movie-details.css';
 import '../../service/movie-box-api';
-import { deleteMovie, getMovie } from '../../service/movie-box-api';
+import { deleteMovie, getMovie, saveMovie, getGenres } from '../../service/movie-box-api';
 
 class MovieDetails extends Component {
 
@@ -23,7 +23,10 @@ class MovieDetails extends Component {
             genreList: []
         },
         isSignedIn: true,
-        isNewMode: false
+        isNewMode: false,
+        genreDropdownToggle: false,
+        genres: [],
+        newGenre: ''
     }
 
     // After Component mounts, fetch details of the movie
@@ -63,7 +66,7 @@ class MovieDetails extends Component {
                     movieObject.createdByGoogleUserId = responseData.createdbygoogleuserid;
                     movieObject.genreList = responseData.genres ? responseData.genres.map(element => element.name) : [];
                     this.setState({ movieObject });
-                    console.log(this.state);
+                    this.getAllGenres();
                 } else {
                     console.log(response.data.data.msg);
                 }
@@ -77,7 +80,31 @@ class MovieDetails extends Component {
      * Saves Movie Data
      */
     saveMovie = () => {
-
+        if (window.confirm('Are you sure you want to save?')) {
+            const validationString = this.validateSaveObject();
+            if(validationString === '') {
+                saveMovie(this.state.movieObject)
+                    .then((response) => {
+                        if (response.data.status === 0){ 
+                            if (this.state.isNewMode) {
+                                this.setState(prevState => { 
+                                    let movieObject = { ...prevState.movieObject };
+                                    movieObject.movieId = response.data.data.movieid;
+                                    return { movieObject, isNewMode: false };
+                                });
+                            }
+                            alert('Movie was saved successfully!');
+                        } else {
+                            console.log(response.data.data.msg);
+                        }
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    });
+            } else {
+                alert(validationString);
+            }
+        }
     }
 
     /**
@@ -99,13 +126,97 @@ class MovieDetails extends Component {
         }
     }
 
+    /**
+     * Fetches all genres stored in database. Is called once component loads
+     */
+    getAllGenres = () => {
+        getGenres()
+            .then((response) => {
+                if (response.data.status === 0) {
+                    const genres = [];
+                    for (const genre of response.data.data) {
+                        genre.checked = false;
+                        for (const selectedGenre of this.state.movieObject.genreList) {
+                            if (genre.name === selectedGenre) {
+                                genre.checked = true;
+                            }
+                        }
+                        genres.push(genre);
+                    }
+                    this.setState({ genres });
+                } else {
+                    console.log(response.data.data.msg);
+                }
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+    }
+
     // Logical Functions--------------------------------------
     /**
      * Validates Save Object and prints the error message in case of an invalid object
-     * @returns {Boolean}
+     * @returns {String}
      */
     validateSaveObject = () => {
+        let validationString = '';
 
+        if (!(this.state.movieObject.movieName && this.state.movieObject.movieName.trim() !== '')) {
+            validationString +='\n- Movie Name cannot be empty.';
+        } else if (this.state.movieObject.movieName.length > 256) {
+            validationString +='\n- Movie Name length cannot be greater than 256.';
+        }
+
+        if (!(this.state.movieObject.director && this.state.movieObject.director.trim() !== '')) {
+            validationString +='\n- Movie Director cannot be empty.';
+        } else if (this.state.movieObject.director.length > 256) {
+            validationString +='\n- Movie Director length cannot be greater than 256.';
+        }
+
+        if (!(this.state.movieObject.genreList && this.state.movieObject.genreList.length > 0)) {
+            validationString +='\n- Movie should atleast have 1 genre.';
+        }
+
+        if (!(this.state.movieObject.popularity && this.state.movieObject.popularity.toString().trim() !== '')) {
+            validationString +='\n- Movie Popularity cannot be empty.';
+        } else if (this.state.movieObject.popularity > 100) {
+            validationString +='\n- Movie Popularity cannot be greater than 100.';
+        }
+
+        if (!(this.state.movieObject.score && this.state.movieObject.score.toString().trim() !== '')) {
+            validationString +='\n- Movie Score cannot be empty.';
+        } else if (this.state.movieObject.score > 10) {
+            validationString +='\n- Movie Score cannot be greater than 10.';
+        }
+
+        return validationString;
+    }
+
+    /**
+     * Pushes a new unique to Genre List
+     */
+    pushNewGenre = () => {
+        const value = this.state.newGenre;
+        for (const genre of this.state.genres) {
+            if (genre.name.toLowerCase() === value.toLowerCase()) {
+                alert('Genre already exists');
+                return;
+            } 
+        }
+
+        let genres = this.state.genres;
+        genres.push({
+            id: '',
+            name: value,
+            checked: true
+        });
+
+        this.setState(prevState => { 
+            let movieObject = { ...prevState.movieObject };
+            const genreList = genres.filter(element => element.checked);
+            movieObject.genreList = genreList.map(element => element.name);
+            return { genres, movieObject, newGenre: '' };
+        });
     }
 
     // IsVisible Functions------------------------------------
@@ -140,6 +251,15 @@ class MovieDetails extends Component {
             return true;
         }
         return false;
+    }
+
+    // Toggler Functions--------------------------------------
+    /**
+     * Toggles Genres Dropdown Options
+     */
+    toggleGenreDropdown = () => {
+        const genreDropdownToggle = !this.state.genreDropdownToggle;
+        this.setState({ genreDropdownToggle: genreDropdownToggle });
     }
 
     // OnChange Functions-------------------------------------
@@ -193,6 +313,74 @@ class MovieDetails extends Component {
             movieObject.score = value;
             return { movieObject };
         });
+    }
+
+    /**
+     * Updates state when genre is updated
+     * @param {Event} event 
+     * @param { {id: String, name: String, checked: bool} } genre 
+     */
+    onGenreChange = (event, genre) => {
+        let genres = this.state.genres;
+        for (const genreItem of genres) {
+            if (genreItem.id === genre.id) {
+                genreItem.checked = event.currentTarget.checked;
+                break;
+            }
+        }
+
+        this.setState(prevState => { 
+            let movieObject = { ...prevState.movieObject };
+            const  genreList = genres.filter(element => element.checked);
+            movieObject.genreList = genreList.map(element => element.name);
+            return { genres, movieObject };
+        });
+    }
+
+    /**
+     * Updates state when new genre input is updated
+     * @param {Event} event
+     */
+    onNewGenreChange = (event) => {
+        const { value } = event.currentTarget;
+        this.setState({ newGenre: value });
+    }
+
+    // Render Functions---------------------------------------
+    /**
+     * Renders the options of Genres Dropdown
+     */
+    renderGenresDropdown = () => {
+        if (this.state.genres && this.state.genres.length > 0) {
+            if (this.state.genres.length === 0) {
+                return (
+                    <div className="dropdown-item" >
+                        Loading...
+                    </div>
+                );
+            } else {
+                return this.state.genres.map(genre => {
+                    return (
+                        <div className="dropdown-item home--dropdown-item" key={genre.id}>
+                            <input 
+                                type="checkbox" 
+                                className="form-check-input home--dropdown-input" 
+                                disabled={!this.isUserSignedIn()}
+                                onChange={(event) => this.onGenreChange(event, genre)}
+                                defaultChecked={genre.checked}
+                            ></input>
+                            {genre.name}
+                        </div>
+                    );
+                });
+            }
+        } else {
+            return (
+                <div className="dropdown-item" >
+                    No Results found in the database.
+                </div>
+            );
+        }
     }
 
     /**
@@ -272,7 +460,7 @@ class MovieDetails extends Component {
                                 <input 
                                 type="number" 
                                 min="0"
-                                max="100"
+                                max="10"
                                 placeholder="Score Value" 
                                 className="form-control home--input" 
                                 aria-label="Score Value" 
@@ -284,29 +472,48 @@ class MovieDetails extends Component {
                         </div>
                     </div>
 
+                    <div className="row">
+                        <div className="col-md-6">
+                            <div className="input-group mb-3 home--search-input-group">
+                                <div className="input-group-prepend">
+                                    <span className="input-group-text home--input-text" id="inputGroup-sizing-default">Genres:</span>
+                                </div>
+                                <div className="dropdown">
+                                    <button className="btn btn-secondary dropdown-toggle" type="button" id="genresDropdown" onClick={this.toggleGenreDropdown}>
+                                        Click to view your Selected Genres
+                                    </button>
+                                    <div className="dropdown-menu home--dropdown-menu" aria-labelledby="genresDropdown" style={{display: (this.state.genreDropdownToggle ? 'block' : 'none')}}>
+                                        {this.renderGenresDropdown()}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="row" hidden={!this.isUserSignedIn()}>
+                        <div className="col-md-6">
+                            <div className="input-group mb-3 home--search-input-group">
+                                <div className="input-group-prepend">
+                                    <span className="input-group-text" id="inputGroup-sizing-default">Add new Genre:</span>
+                                </div>
+                                <input 
+                                type="text" 
+                                placeholder="New Genre Name" 
+                                className="form-control home--input" 
+                                aria-label="New Genre Name" 
+                                onChange={this.onNewGenreChange}
+                                value={this.state.newGenre}
+                                aria-describedby="inputGroup-sizing-default"></input>
+                                <button className="btn btn-default" onClick={this.pushNewGenre}>Push</button>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="row" hidden={!this.isUserSignedIn()}>
                         <button className="btn btn-primary movie-details--button" onClick={this.saveMovie}>Save</button>
                         <button className="btn btn-danger movie-details--button" onClick={this.deleteMovie} hidden={!this.isUserSignedInAndIsNotNewMode()}>Delete</button>
                     </div>
                 </div>
-
-                {/* <div className="row">
-                    <div className="col-md-4">
-                        <div className="input-group mb-3 home--search-input-group">
-                            <div className="input-group-prepend">
-                                <span className="input-group-text" id="inputGroup-sizing-default">Name:</span>
-                            </div>
-                            <input 
-                            type="text" 
-                            placeholder="Enter Search Text Here" 
-                            className="form-control home--input" 
-                            aria-label="Search Text" 
-                            onChange={this.onSearchTermChange}
-                            value={this.state.searchParams.searchTerm}
-                            aria-describedby="inputGroup-sizing-default"></input>
-                        </div>
-                    </div>
-                </div> */}
 
                 
             </div>
