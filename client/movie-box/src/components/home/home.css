@@ -6,7 +6,7 @@
     margin-top: 20px;
 }
 
-.home--tile, .home--search-buttton {
+.home--tile, .home--buttton {
     margin-bottom: 15px;
 }
 
@@ -14,7 +14,7 @@
     margin-left: 15px;
 }
 
-.home--dropdown-inline-block {
+.home--dropdown-inline-block, .home--page-number-paragraph {
     display: inline-block;
 }
 
@@ -22,11 +22,11 @@
     width: auto;
 }
 
-.home--dropdown {
+.home--dropdown, .home--page-number-margin {
     margin-right: 15px;
 }
 
-.home--search-buttton {
+.home--buttton {
     vertical-align: baseline;
 }
 

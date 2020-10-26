@@ -31,24 +31,35 @@ class Home extends Component {
         genreDropdownToggle: false,
         pageSizeDropdownToggle: false,
         pageSizeDropdownOptions: [ 10, 15, 25, 50, 100],
-        pageSizeDropdownString: 15
+        pageSizeDropdownString: 15,
+        totalPageCount: 1,
+        totalSearchResults: 0
     }
 
     // After Component mounts, fetch a list of movies and all genres
     componentDidMount() {
-        this.searchMovies();
+        this.searchMovies(false);
         this.getAllGenres();
     }
 
     // API Functions------------------------------------------
     /**
      * Fetches list of movies based on search parameters from database.
+     * @param {Boolean} isCalledBySearchButton 
      */
-    searchMovies = () => {
+    searchMovies = async (isCalledBySearchButton = true) => {
+        if (isCalledBySearchButton) {
+            await this.onPageNumberChange(1);
+        }
         searchMovies(this.state.searchParams)
             .then((response) => {
                 if (response.data.status === 0) {
-                    this.setState({movieList: response.data.data});
+                    let totalSearchResults = 0;
+                    if (response.data.data && response.data.data.length > 0) {
+                        totalSearchResults = response.data.data[0].count;
+                    }
+                    this.setState({movieList: response.data.data, totalSearchResults});
+                    this.calculateMaximumNumberofAllowedPages();
                 } else {
                     console.log(response.data.data.msg);
                 }
@@ -81,10 +92,73 @@ class Home extends Component {
             });
     }
 
+    // Logical Functions--------------------------------------
+    /**
+     * Calculates the max number of pages after every search
+     */
+    calculateMaximumNumberofAllowedPages = () => {
+        const totalPageCount = Math.ceil(this.state.totalSearchResults / this.state.searchParams.pageSize);
+        this.setState({ totalPageCount });
+        // this.resetPageNumberIfInvalid();
+    }
+
+    /**
+     * Reset Page Number to 1 in case of an invalid value
+     */
+    resetPageNumberIfInvalid = async () => {
+        if (this.state.searchParams.pageNumber < 1 || this.state.searchParams.pageNumber > this.state.totalPageCount) {
+            await this.onPageNumberChange(1);
+            this.searchMovies(false);
+        }
+    }
+
+    /**
+     * Decrements Current Page number and searches for the results
+     */
+    goToPreviousPage = async () => {
+        if (this.state.searchParams.pageNumber > 1) {
+            const pageNumber = this.state.searchParams.pageNumber - 1;
+            await this.onPageNumberChange(pageNumber);
+            this.searchMovies(false);
+        }
+    }
+
+    /**
+     * Increments Current Page number and searches for the results
+     */
+    goToNextPage = async () => {
+        if (this.state.searchParams.pageNumber < this.state.totalPageCount) {
+            const pageNumber = this.state.searchParams.pageNumber + 1;
+            await this.onPageNumberChange(pageNumber);
+            this.searchMovies(false);
+        }
+    }
+
+    // IsVisible Functions------------------------------------
+    /**
+     * Determines to show previous page button or not based on some conditions
+     */
+    isPreviousPageButtonVisible = () => {
+        if (this.state.searchParams.pageNumber === 1) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Determines to show next page button or not based on some conditions
+     */
+    isNextPageButtonVisible = () => {
+        if (this.state.searchParams.pageNumber === this.state.totalPageCount) {
+            return false;
+        }
+        return true;
+    }
+
     // OnChange Functions-------------------------------------
     /**
      * Updates state when search term is updated
-     * @param {Event} event 
+     * @param {Event} event
      */
     onSearchTermChange = (event) => {
         const { value } = event.currentTarget;
@@ -137,6 +211,18 @@ class Home extends Component {
                 pageSizeDropdownString: newValue, 
                 searchParams: searchParams
             };
+        });
+    }
+
+    /**
+     * Updates state when pageNumber is updated
+     * @param {Number} newValue 
+     */
+    onPageNumberChange = async (newValue) => {
+        await this.setState(prevState => { 
+            let searchParams = { ...prevState.searchParams };
+            searchParams.pageNumber = newValue;
+            return { searchParams };
         });
     }
 
@@ -366,7 +452,7 @@ class Home extends Component {
                                     </div>
                                 </div>
                             </div>
-                            <button className="btn btn-primary home--search-buttton" onClick={this.searchMovies}>Search</button>
+                            <button className="btn btn-primary home--buttton" onClick={this.searchMovies}>Search</button>
                         </div>
                     </div>
 
@@ -385,6 +471,14 @@ class Home extends Component {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <div className="row">
+                        <div className="col-md-8">
+                            <button className="btn btn-primary home--buttton home--page-number-margin" onClick={this.goToPreviousPage} disabled={!this.isPreviousPageButtonVisible()}>Previous Page</button>
+                            <p className="home--page-number-margin home--page-number-paragraph">{this.state.searchParams.pageNumber} / {this.state.totalPageCount}</p>
+                            <button className="btn btn-primary home--buttton home--page-number-margin" onClick={this.goToNextPage} disabled={!this.isNextPageButtonVisible()}>Next Page</button>
                         </div>
                     </div>
                 </div>
