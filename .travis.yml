@@ -3,12 +3,12 @@ services:
   - docker
   
 # build test images
-before_install:
-  - docker build -t pranavj1001/movie-listing-client-test -f ./client/movie-box/dev.Dockerfile ./client/movie-box
+# before_install:
+#   - docker build -t pranavj1001/movie-listing-client-test -f ./client/movie-box/dev.Dockerfile ./client/movie-box
 
 # run tests
-script:
-  - docker run -e CI=true pranavj1001/movie-listing-client-test npm test
+# script:
+#   - docker run -e CI=true pranavj1001/movie-listing-client-test npm test
 
 after_success:
   # build production images
@@ -21,3 +21,4 @@ after_success:
   - docker push pranavj1001/movie-listing-client
   - docker push pranavj1001/movie-listing-server
   - docker push pranavj1001/movie-listing-nginx
+
