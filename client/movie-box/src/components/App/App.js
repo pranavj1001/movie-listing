@@ -10,6 +10,7 @@ import './App.css';
 import Header from '../header/header';
 import Footer from '../footer/footer';
 import Home from '../home/home';
+import MovieDetails from '../movie-details/movie-details';
 
 function App() {
   return (
@@ -19,9 +20,8 @@ function App() {
       <div className="content-div">
       <Router>
         <Switch>
-          <Route path="/">
-            <Home />
-          </Route>
+          <Route path="/movie/:movieId" component={MovieDetails} />
+          <Route path="/" component={Home} />
         </Switch>
       </Router>
       </div>

@@ -1,0 +1,23 @@
+sudo: required
+services: 
+  - docker
+  
+# build test images
+before_install:
+  - docker build -t pranavj1001/movie-listing-client-test -f ./client/movie-listing/dev.Dockerfile ./client/movie-listing
+
+# run tests
+script:
+  - docker run -e CI=true pranavj1001/movie-listing-client-test npm test
+
+after_success:
+  # build production images
+  - docker build -t pranavj1001/movie-listing-client ./client/movie-listing
+  - docker build -t pranavj1001/movie-listing-server ./server
+  - docker build -t pranavj1001/movie-listing-nginx ./nginx
+  # Log in to DOCKER CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # push production images to docker hub
+  - docker push pranavj1001/movie-listing-client
+  - docker push pranavj1001/movie-listing-server
+  - docker push pranavj1001/movie-listing-nginx
